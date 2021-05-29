@@ -78,12 +78,12 @@ def loadImage(path, window):
         print(f"Unable to open {path}!")
 
 def main():
-gs_root = 'gs://cameratraprepo-vcm/TEAMRIR_final_bu/'
-photo_loc = '/home/mairin/Documents/GradSchool/PhD/Research/CircuitTheory_TEAM/TEAMData/tmpPhotos/'
-try:
-    os.mkdir(photo_loc)
-except:
-    pass
+    gs_root = 'gs://cameratraprepo-vcm/TEAMRIR_final_bu/'
+    photo_loc = '/home/mairin/Documents/GradSchool/PhD/Research/CircuitTheory_TEAM/TEAMData/tmpPhotos/'
+    try:
+        os.mkdir(photo_loc)
+    except:
+        pass
 
 infile = '/home/mairin/Documents/GradSchool/PhD/Research/CircuitTheory_TEAM/TEAMData/genusHomoFilter_team_tv_data_MDAnnotated.csv'
     # Load data - in this case, processing has already been completed (see function, does not need to be re-run)
@@ -93,11 +93,8 @@ df = pd.read_csv(infile, parse_dates=['photoDT'])
 # Every time you run, subset to only those rows with 'NA/None' in the hunter01N column, the column for IDing hunters
 df_sub = df.loc[pd.isna(df['hunter01N'])]
 # Then, group this by combination of "Sampling Unit Name" and time, assuming 5 minute intervals are good enough
-
 df_group = df_sub.groupby(['Sampling Unit Name',pd.Grouper(key='photoDT', freq='10min')])
-
 # For each group, first download. Then, once they are all downloaded, go through the window-based processing (offline processing vs. active time...)
-
 for df, d in df_group:
     print(f"Assessing {df}")
     print(f"...number of images: {len(d)}")
@@ -113,75 +110,29 @@ for df, d in df_group:
             subprocess.call(['gsutil','-m','cp',f'{url}',f'{photo_loc}/{file}'])
         # equivalent to e.g.:
 
-### Need to do a re-download for incomplete suffixes, iterate over rows
-# e.g. gs://cameratraprepo-vcm/TEAMRIR_final_bu/TEAMRIR/5/2014.01/CT-VB-/CT-VB-1-7/IMG_0018.JPG
-# Rules: 
-#   CT-VB-X/CT-VB-X-Y/ - X must match
-
-for i,r in df_sub.iterrows():
-    urltmp = r['Photo ID URL']
-    urlchunk = urltmp.split("/")
-    ymatch = "-".join((urlchunk[4].split("-"))[0:3])
-    if urlchunk[3] != ymatch:
-        urlchunk[3] = ymatch
-        url = gs_root+"/".join(urlchunk)
-        subprocess.call(['gsutil','-m','cp',f'{url}',f'{photo_loc}/{file}'])
-
-for df, d in df_group:
-    print(f"Assessing {df}")
-    print(f"...number of images: {len(d)}")
-#    urls='("'+'" "'.join(gs_root+d['Photo ID URL'])+'")'
-    # Download images if less than 10:
-    if len(d) >= 10:
-        print("...downloading images")
-        # Iterate over rows
-        for i, r in d.iterrows():
-            file = r['Photo ID URL']
-            url = gs_root+file
-            # print(f"......url: {url}")
-            subprocess.call(['gsutil','-m','cp',f'{url}',f'{photo_loc}/{file}'])
-
-
-# Okay, so some of the URLs appear broken:
-
-# e.g. gs://cameratraprepo-vcm/TEAMRIR_final_bu/TEAMRIR/5/2014.01/CT-VB-/CT-VB-1-7/IMG_0018.JPG
-
-# I believe the issue is here: gs://cameratraprepo-vcm/TEAMRIR_final_bu/TEAMRIR/5/2014.01/CT-VB-  ###  /CT-VB-1-7/IMG_0018.JPG - should be taken from the 
-#       prefix of the next section of the url...oof.
-
-### EXAMPLE: df['Photo ID URL'][row]
-# Setup layout of the window app
-layout = [
-    [pSG.Image(key='-IMAGE-')],
-    [pSG.Text('Hunter (1)? Or not (leave blank)?'), pSG.InputText('')], 
-    # [pSG.Submit(), pSG.Cancel()],
-    [pSG.Button("Prev"),pSG.Button("Next")]
-]
-window = pSG.Window('Image viewer', layout)
-while True:
-    event, values = window.read()
-    if event == pSG.WIN_CLOSED or event == 'Cancel': # if user closes window or clicks cancel
-        print('Closed normally')
-        break
-    elif event == 'Submit':
-        newval = values[(1)]
-        print(newval)
-        break
-window1.close()
-
-
-for state,frame in df_group:
-    print(f"First 2 entries for {state!r}")
-    print("---")
-    print(len(frame), end="\n\n")
-
-print(df['Photo ID URL'][1:5])
-
-# image_csv_file = os.path("              ")
-# 
-# for r in 1:len(image_csv_file):
-    # Open image, set up in a gui element
-    # GUI element (pSG)
-
-imgs = ['/home/mairin/Pictures/gato.png', '/home/mairin/Pictures/nomozo.png']
-pSG.theme('DarkTeal8')
+    ### Need to do a re-download for incomplete suffixes, iterate over rows
+    # e.g. gs://cameratraprepo-vcm/TEAMRIR_final_bu/TEAMRIR/5/2014.01/CT-VB-/CT-VB-1-7/IMG_0018.JPG
+    # Rules: 
+    #   CT-VB-X/CT-VB-X-Y/ - X must match
+    # for i,r in df_sub.iterrows():
+    #     urltmp = r['Photo ID URL']
+    #     urlchunk = urltmp.split("/")
+    #     ymatch = "-".join((urlchunk[4].split("-"))[0:3])
+    #     if urlchunk[3] != ymatch:
+    #         urlchunk[3] = ymatch
+    #         url = gs_root+"/".join(urlchunk)
+    #         subprocess.call(['gsutil','-m','cp',f'{url}',f'{photo_loc}/{file}'])
+    # 
+    # for df, d in df_group:
+    #     print(f"Assessing {df}")
+    #     print(f"...number of images: {len(d)}")
+    # #    urls='("'+'" "'.join(gs_root+d['Photo ID URL'])+'")'
+    #     # Download images if less than 10:
+    #     if len(d) >= 10:
+    #         print("...downloading images")
+    #         # Iterate over rows
+    #         for i, r in d.iterrows():
+    #             file = r['Photo ID URL']
+    #             url = gs_root+file
+    #             # print(f"......url: {url}")
+    #             subprocess.call(['gsutil','-m','cp',f'{url}',f'{photo_loc}/{file}'])
